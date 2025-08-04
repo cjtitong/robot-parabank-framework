@@ -1,8 +1,12 @@
 pipeline {
     agent any
 
+    tools {
+        python 'Python311' // Use the Python tool name defined in Jenkins Global Tool Configuration
+    }
+
     environment {
-        PYTHON = '"C:\\Users\\CJ Titong\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"'
+        PYTHON = 'python' // Jenkins puts the selected Python in PATH, so we can just use 'python'
     }
 
     stages {
