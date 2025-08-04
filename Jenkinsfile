@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        VENV_DIR = 'venv'
-        PYTHON = 'python' // Use full path like 'C:\\Python311\\python.exe' if needed
+        PYTHON = '"C:\\Users\\CJ Titong\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"'
     }
 
     stages {
@@ -16,10 +15,10 @@ pipeline {
         stage('Set Up Virtual Environment') {
             steps {
                 bat """
-                ${env.PYTHON} -m venv ${env.VENV_DIR}
-                call ${env.VENV_DIR}\\Scripts\\activate
-                ${env.VENV_DIR}\\Scripts\\python.exe -m pip install --upgrade pip
-                ${env.VENV_DIR}\\Scripts\\pip.exe install -r requirements.txt
+                ${env.PYTHON} -m venv venv
+                call venv\\Scripts\\activate
+                python -m pip install --upgrade pip
+                pip install -r requirements.txt
                 """
             }
         }
@@ -27,8 +26,8 @@ pipeline {
         stage('Run Robot Tests') {
             steps {
                 bat """
-                call ${env.VENV_DIR}\\Scripts\\activate
-                ${env.VENV_DIR}\\Scripts\\robot -d results tests
+                call venv\\Scripts\\activate
+                robot -d results tests
                 """
             }
         }
