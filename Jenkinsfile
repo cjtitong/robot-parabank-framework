@@ -2,36 +2,35 @@ pipeline {
     agent any
 
     environment {
-        ROBOT_OPTIONS = '--outputdir reports'
+        PYTHON_HOME = tool name: 'Python311', type: 'hudson.plugins.python.PythonInstallation'
+        PATH = "${env.PYTHON_HOME};${env.PYTHON_HOME}\\Scripts;${env.PATH}"
     }
 
     stages {
         stage('Setup Python') {
             steps {
-                script {
-                    def pythonHome = tool name: 'Python311', type: 'jenkins.plugins.shiningpanda.tools.PythonInstallation'
-                    env.PATH = "${pythonHome}\\Scripts;${pythonHome};${env.PATH}"
-                }
+                echo "Using Python at: ${env.PYTHON_HOME}"
+                bat 'python --version'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                bat 'pip install --upgrade pip'
+                bat 'python -m pip install --upgrade pip'
                 bat 'pip install -r requirements.txt'
             }
         }
 
         stage('Run Robot Tests') {
             steps {
-                bat 'robot %ROBOT_OPTIONS% tests/'
+                bat 'robot tests/ui'
             }
         }
     }
 
     post {
         always {
-            archiveArtifacts artifacts: 'reports/**', fingerprint: true
+            archiveArtifacts artifacts: '**/output.xml', allowEmptyArchive: true
         }
     }
 }
