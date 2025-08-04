@@ -3,37 +3,37 @@ pipeline {
 
     environment {
         VENV_DIR = 'venv'
+        PYTHON = 'python' // Use full path like 'C:\\Python311\\python.exe' if needed
     }
 
     stages {
-        stage('Preparation') {
+        stage('Check Python Version') {
             steps {
-                echo 'Cloning repo or accessing project directory'
-                // git checkout already happens from SCM config
+                bat "${env.PYTHON} --version"
             }
         }
 
-        stage('Set Up Environment') {
+        stage('Set Up Virtual Environment') {
             steps {
-                bat '''
-                python -m venv venv
-                call venv\\Scripts\\activate
-                pip install --upgrade pip
-                pip install -r requirements.txt
-                '''
+                bat """
+                ${env.PYTHON} -m venv ${env.VENV_DIR}
+                call ${env.VENV_DIR}\\Scripts\\activate
+                ${env.VENV_DIR}\\Scripts\\python.exe -m pip install --upgrade pip
+                ${env.VENV_DIR}\\Scripts\\pip.exe install -r requirements.txt
+                """
             }
         }
 
         stage('Run Robot Tests') {
             steps {
-                bat '''
-                call venv\\Scripts\\activate
-                robot -d results tests\\ui
-                '''
+                bat """
+                call ${env.VENV_DIR}\\Scripts\\activate
+                ${env.VENV_DIR}\\Scripts\\robot -d results tests
+                """
             }
         }
 
-        stage('Publish Report') {
+        stage('Publish Robot Report') {
             steps {
                 robot outputPath: 'results'
             }
@@ -42,7 +42,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'results\\*.*', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'results/*.*', allowEmptyArchive: true
         }
     }
 }
