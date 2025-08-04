@@ -1,51 +1,44 @@
 pipeline {
     agent any
 
-    tools {
-        python 'Python311' // Use the Python tool name defined in Jenkins Global Tool Configuration
-    }
-
     environment {
-        PYTHON = 'python' // Jenkins puts the selected Python in PATH, so we can just use 'python'
+        // This will be set in the 'Setup Python' stage
+        PATH = ""
     }
 
     stages {
-        stage('Check Python Version') {
+        stage('Setup Python') {
             steps {
-                bat "${env.PYTHON} --version"
+                script {
+                    // Use Python311 configured in Jenkins > Global Tool Configuration
+                    def pythonHome = tool name: 'Python311', type: 'jenkins.plugins.shiningpanda.tools.PythonInstallation'
+                    env.PATH = "${pythonHome}/bin:${env.PATH}"
+                }
             }
         }
 
-        stage('Set Up Virtual Environment') {
+        stage('Install Dependencies') {
             steps {
-                bat """
-                ${env.PYTHON} -m venv venv
-                call venv\\Scripts\\activate
-                python -m pip install --upgrade pip
-                pip install -r requirements.txt
-                """
+                sh '''
+                    python --version
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '''
             }
         }
 
         stage('Run Robot Tests') {
             steps {
-                bat """
-                call venv\\Scripts\\activate
-                robot -d results tests
-                """
-            }
-        }
-
-        stage('Publish Robot Report') {
-            steps {
-                robot outputPath: 'results'
+                sh '''
+                    robot -d results tests/ui
+                '''
             }
         }
     }
 
     post {
         always {
-            archiveArtifacts artifacts: 'results/*.*', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'results/**/*.xml, results/**/*.html, results/**/*.log', allowEmptyArchive: true
         }
     }
 }
