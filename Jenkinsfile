@@ -9,16 +9,15 @@ pipeline {
         stage('Preparation') {
             steps {
                 echo 'Cloning repo or accessing project directory'
-                // Uncomment below if this pipeline is triggered from a Git repo
-                // git 'https://your.git.repo.url/robot-parabankparasoft-framework.git'
+                // git checkout already happens from SCM config
             }
         }
 
         stage('Set Up Environment') {
             steps {
-                sh '''
+                bat '''
                 python -m venv venv
-                . venv/bin/activate
+                call venv\\Scripts\\activate
                 pip install --upgrade pip
                 pip install -r requirements.txt
                 '''
@@ -27,9 +26,9 @@ pipeline {
 
         stage('Run Robot Tests') {
             steps {
-                sh '''
-                . venv/bin/activate
-                robot -d results tests
+                bat '''
+                call venv\\Scripts\\activate
+                robot -d results tests\\ui
                 '''
             }
         }
@@ -43,7 +42,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'results/*.*', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'results\\*.*', allowEmptyArchive: true
         }
     }
 }
