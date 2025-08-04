@@ -2,21 +2,21 @@ pipeline {
     agent any
 
     environment {
-        PYTHON_HOME = tool name: 'Python311', type: 'hudson.plugins.python.PythonInstallation'
-        PATH = "${env.PYTHON_HOME};${env.PYTHON_HOME}\\Scripts;${env.PATH}"
+        // Use double backslashes or a single forward slash
+        PYTHON_HOME = 'C:/Users/Code Byte/AppData/Local/Programs/Python/Python311'
+        PATH = "${PYTHON_HOME}/Scripts;${PYTHON_HOME};${env.PATH}"
     }
 
     stages {
-        stage('Setup Python') {
+        stage('Check Python version') {
             steps {
-                echo "Using Python at: ${env.PYTHON_HOME}"
                 bat 'python --version'
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Install dependencies') {
             steps {
-                bat 'python -m pip install --upgrade pip'
+                bat 'pip install --upgrade pip'
                 bat 'pip install -r requirements.txt'
             }
         }
@@ -25,12 +25,6 @@ pipeline {
             steps {
                 bat 'robot tests/ui'
             }
-        }
-    }
-
-    post {
-        always {
-            archiveArtifacts artifacts: '**/output.xml', allowEmptyArchive: true
         }
     }
 }
