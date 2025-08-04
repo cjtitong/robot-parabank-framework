@@ -2,9 +2,8 @@ pipeline {
     agent any
 
     environment {
-        // Use double backslashes or a single forward slash
-        PYTHON_HOME = 'C:/Users/Code Byte/AppData/Local/Programs/Python/Python311'
-        PATH = "${PYTHON_HOME}/Scripts;${PYTHON_HOME};${env.PATH}"
+        PYTHONPATH = "C:/Users/Code Byte/AppData/Local/Programs/Python/Python311"
+        PATH = "${env.PYTHONPATH};${env.PYTHONPATH}/Scripts;${env.PATH}"
     }
 
     stages {
@@ -14,10 +13,15 @@ pipeline {
             }
         }
 
+        stage('Upgrade pip') {
+            steps {
+                bat 'python -m pip install --upgrade pip'
+            }
+        }
+
         stage('Install dependencies') {
             steps {
-                bat 'pip install --upgrade pip'
-                bat 'pip install -r requirements.txt'
+                bat 'pip install -r requirements.txt || echo No requirements.txt found'
             }
         }
 
